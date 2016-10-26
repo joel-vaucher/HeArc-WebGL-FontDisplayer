@@ -1,0 +1,29 @@
+{
+  "name": "webgl-font-displayer",
+  "version": "0.0.1",
+  "description": "Application permettant de charger un font et de l'afficher en 3D dans un contexter WebGL.",
+  "dependencies": {
+    "opentype.js": "^0.6.*"
+  },
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joel-vaucher/HeArc-WebGL-FontDisplayer.git"
+  },
+  "keywords": [
+    "WebGl",
+    "HTML",
+    "JavaScript",
+    "Infographics",
+    "GLSL"
+  ],
+  "author": "Joël Vaucher & Julien M'Poy",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/joel-vaucher/HeArc-WebGL-FontDisplayer/issues"
+  },
+  "homepage": "https://github.com/joel-vaucher/HeArc-WebGL-FontDisplayer#readme"
+}

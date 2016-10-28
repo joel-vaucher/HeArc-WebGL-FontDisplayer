@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebGL Font Displayer</title>
+</head>
+<body>
+    <div class="main container">
+		<canvas id="canvas" width="940" height="300" />
+    </div>
+    <script src="node_modules/opentype.js/dist/opentype.js"></script>
+	<script type="text/javascript">
+	
+	var gFont;
+	
+	opentype.load('fonts/GothamNarrow-Ultra.otf', function(err, font) {
+		if (err) {
+			 alert('Font could not be loaded: ' + err);
+		} else {
+			var ctx = document.getElementById('canvas').getContext('2d');
+			// Construct a Path object containing the letter shapes of the given text.
+			// The other parameters are x, y and fontSize.
+			// Note that y is the position of the baseline.
+			var path = font.getPath('o', 0, 150, 72);
+			// If you just want to draw the text you can also use font.draw(ctx, text, x, y, fontSize).
+			//path.draw(ctx);
+			ctx.moveTo(0,0);
+			path.commands.forEach(function (command){
+				ctx.lineTo(command.x, command.y)
+			});
+			gFont = font;
+		}
+	});
+	</script>
+</body>
+</html>

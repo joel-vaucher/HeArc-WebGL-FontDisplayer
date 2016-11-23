@@ -1,36 +1,146 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>WebGL Font Displayer</title>
+  <meta charset="UTF-8">
+  <title>WebGL Font Displayer</title>
 </head>
 <body>
-    <div class="main container">
-		<canvas id="canvas" width="940" height="300" />
-    </div>
-    <script src="node_modules/opentype.js/dist/opentype.js"></script>
-	<script type="text/javascript">
-	
-	var gFont;
-	
-	opentype.load('fonts/GothamNarrow-Ultra.otf', function(err, font) {
-		if (err) {
-			 alert('Font could not be loaded: ' + err);
-		} else {
-			var ctx = document.getElementById('canvas').getContext('2d');
-			// Construct a Path object containing the letter shapes of the given text.
-			// The other parameters are x, y and fontSize.
-			// Note that y is the position of the baseline.
-			var path = font.getPath('o', 0, 150, 72);
-			// If you just want to draw the text you can also use font.draw(ctx, text, x, y, fontSize).
-			//path.draw(ctx);
-			ctx.moveTo(0,0);
-			path.commands.forEach(function (command){
-				ctx.lineTo(command.x, command.y)
-			});
-			gFont = font;
-		}
-	});
-	</script>
+  <div class="main container">
+    <canvas id="canvas" width="600" height="700" style="background-color: #CCCCCC;"/>
+  </div>
+  <script src="node_modules/opentype.js/dist/opentype.js"></script>
+  <script src="node_modules/earcut/dist/earcut.dev.js"></script>
+  <script type="text/javascript">
+    var gFont;
+    var canvas = document.getElementById('canvas');
+    var ctx = canvas.getContext('2d');
+    var path;
+    var i = 0;
+    opentype.load('fonts/GothamNarrow-Ultra.otf', function(err, font) {
+      if (err) {
+        alert('Font could not be loaded: ' + err);
+      } else {
+        // Construct a Path object containing the letter shapes of the given text.
+        // The other parameters are x, y and fontSize.
+        // Note that y is the position of the baseline.
+        path = font.getPath('i', 0, 150, 72);
+        gFont = font;
+        drawStepByStep();
+      }
+    });
+
+    //permet de différencier les différents triangles de la forme avec des couleur différentes
+    function getRandomColor() {
+      var letters = '0123456789ABCDEF'.split('');
+      var color = '#';
+      for (var i = 0; i < 6; i++ ) {
+        color += letters[Math.round(Math.random() * 15)];
+      }
+      return color;
+    }
+
+    //Cette fonction à pour but de contruire la lettre
+    //Elle est limité dans la lecture de la liste des command par la variable step
+    function drawStepByStep() {
+      // If you just want to draw the text you can also use font.draw(ctx, text, x, y, fontSize).
+      //path.draw(ctx);
+
+      //contient les points
+      tab = [];
+      acc = 10;
+      i = 0;
+      //permet de connaitre de le point d'origine dans la création des courbes de bézier
+      lastcommand = {x: 0, y:0};
+      console.log("Draw")
+      path.commands.forEach(function (command){
+        if(i < document.getElementById("step").value){
+          //ajoute les extrémités d'une ligne d'une ligne
+          if(command.type == 'L' || command.type == 'M') {
+            console.log("line")
+            tab.push(command.x);
+            tab.push(command.y);
+          //ajoute ACC+1 points répartit le long d'une courbe de bézier
+          } else if (command.type == 'C') {
+            console.log("Courbe Cubique");
+            stepC = 1/acc;
+            for(t = stepC; t < 1; t += stepC){
+              //OPTIMISATION NECESSAIRE
+              //formule de bézier
+              px = (1-t)*(1-t)*(1-t)*lastcommand.x + 3*(1-t)*(1-t)*t*command.x1 + 3*(1-t)*t*t*command.x2 + t*t*t * command.x;
+              py = (1-t)*(1-t)*(1-t)*lastcommand.y + 3*(1-t)*(1-t)*t*command.y1 + 3*(1-t)*t*t*command.y2 + t*t*t * command.y;
+              tab.push(px);
+              tab.push(py);
+              console.log(px);
+              console.log(py);
+            }
+            tab.push(command.x);
+            tab.push(command.y);
+          //ajoute ACC+1 point répartit le long d'une courbe de bézier
+          } else if(command.type == 'Q'){
+            console.log("Courbe Quadratique");
+            stepQ = 1/acc;
+            for(t = stepQ; t < 1; t += stepQ){
+              //OPTIMISATION NECESSAIRE
+              //formule de bézier
+              px = (1-t)*(1-t)*lastcommand.x + 2*(1-t)*t*command.x1 + t*t * command.x;
+              py = (1-t)*(1-t)*lastcommand.y + 2*(1-t)*t*command.y1 + t*t * command.y;
+              tab.push(px);
+              tab.push(py);
+              console.log(px);
+              console.log(py);
+            }
+            tab.push(command.x);
+            tab.push(command.y);
+          //ajout le point d'origine pour fermer la forme
+          //Optimisation ?
+          } else if(command.type == 'Z'){
+            tab.push(tab[0]);
+            tab.push(tab[1]);
+          }
+          lastcommand = command;
+        }
+        i++;
+      });
+      //multiplicateurs des corrdonnées (pour une meilleur visualisation)
+      for(i = 0; i < tab.length; i++){
+        tab[i] *= 4;
+      }
+
+      /*
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.beginPath();
+      for(i = 0; i+1 < tab.length; i+= 2){
+      ctx.lineTo(tab[i]*4, tab[i+1]*4);
+      }*/
+
+      //retourne les index pour la création des triangles
+      triangles = earcut(tab);
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      /*
+      ctx.beginPath();
+      ctx.moveTo(0,0);
+      triangles.forEach(function (index){
+      ctx.lineTo(tab[index*2]*4, tab[index*2+1]*4);
+      //console.log("line");
+      });
+      */
+      //chaque itération dessine un triangle
+      for(i = 0; i < triangles.length; i+= 3){
+        ctx.beginPath();
+        ctx.fillStyle = getRandomColor();
+        //pour chaque ensemble de trois indice formant un triangle dans le tableau triangles
+        //on récupère les coordonnées stockées dans le tableau tab
+        ctx.moveTo(tab[triangles[i]*2], tab[triangles[i]*2+1]);
+        ctx.lineTo(tab[triangles[i+1]*2], tab[triangles[i+1]*2+1]);
+        ctx.lineTo(tab[triangles[i+2]*2], tab[triangles[i+2]*2+1]);
+        ctx.fill();
+      }
+
+      ctx.stroke();
+    }
+  </script>
+  <input type="number" id="step" value="1" onchange="drawStepByStep();return false;"/>
 </body>
 </html>

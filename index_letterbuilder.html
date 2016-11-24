@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>WebGL Font Displayer</title>
+</head>
+<body>
+  <div class="main container">
+    <canvas id="canvas" width="600" height="700" style="background-color: #CCCCCC;"/>
+  </div>
+  <script src="node_modules/opentype.js/dist/opentype.js"></script>
+  <script src="node_modules/earcut/dist/earcut.dev.js"></script>
+  <script src="js/letter-triangularizer.js"></script>
+  <script type="text/javascript">
+
+    var canvas = document.getElementById('canvas');
+    var ctx = canvas.getContext('2d');
+    var path;
+    var chosenFont;
+    var letter = 'T';
+    var i = 0;
+    opentype.load('fonts/GothamNarrow-Ultra.otf', function(err, font) {
+        if (err) {
+            alert('Font could not be loaded: ' + err);
+        }
+        else {
+            chosenFont = font;
+            draw();
+        }
+    });
+
+    //permet de différencier les différents triangles de la forme avec des couleur différentes
+    function getRandomColor() {
+        var letters = '0123456789ABCDEF'.split('');
+        var color = '#';
+        for (var i = 0; i < 6; i++ ) {
+            color += letters[Math.round(Math.random() * 15)];
+        }
+        return color;
+    }
+
+    //Cette fonction à pour but de contruire la lettre
+    //Elle est limité dans la lecture de la liste des command par la variable step
+    function draw() {
+        // var points = letterPathBuilder.createPointsFromPath(path);
+        var points = LetterTriangularizer.createPoints(letter, chosenFont);
+        //retourne les index pour la création des triangles
+        var triangles = LetterTriangularizer.createTrianglesFromPoints(points);
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        //chaque itération dessine un triangle
+        for(i = 0; i < triangles.length; i+= 3){
+            ctx.beginPath();
+            ctx.fillStyle = getRandomColor();
+            //pour chaque ensemble de trois indice formant un triangle dans le tableau triangles
+            //on récupère les coordonnées stockées dans le tableau tab
+            ctx.moveTo(points[triangles[i]*2], points[triangles[i]*2+1]);
+            ctx.lineTo(points[triangles[i+1]*2], points[triangles[i+1]*2+1]);
+            ctx.lineTo(points[triangles[i+2]*2], points[triangles[i+2]*2+1]);
+            ctx.fill();
+        }
+        ctx.stroke();
+    }
+
+    function updateLetter(input) {
+        letter = input.value;
+        draw();
+    }
+  </script>
+  <input type="number" id="step" value="1" onchange="drawStepByStep();return false;"/>
+  <input type="text" id="letter-input" name="letter" value="T" maxlength="1" onchange="updateLetter(this); return false;">
+</body>
+</html>

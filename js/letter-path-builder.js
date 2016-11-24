@@ -2,8 +2,8 @@ class LetterPathBuilder {
     constructor(font) {
         this._font = font;
     }
-    createPath(letter) {
-        return this._font.getPath(letter, 0, 150, 72);
+    createPoints(letter, font) {
+        return this.createPointsFromPath(font.getPath(letter, 0, 150, 72));
     }
     createPointsFromPath(path) {
         var points = [];

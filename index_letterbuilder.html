@@ -17,14 +17,17 @@
     var canvas = document.getElementById('canvas');
     var ctx = canvas.getContext('2d');
     var path;
+    var chosenFont;
+    var letter = 'T';
     var i = 0;
     opentype.load('fonts/GothamNarrow-Ultra.otf', function(err, font) {
         if (err) {
             alert('Font could not be loaded: ' + err);
         }
         else {
+            chosenFont = font;
             letterPathBuilder = new LetterPathBuilder(font);
-            path = letterPathBuilder.createPath('T');
+            // path = letterPathBuilder.createPath('T');
             draw();
         }
     });
@@ -42,7 +45,8 @@
     //Cette fonction à pour but de contruire la lettre
     //Elle est limité dans la lecture de la liste des command par la variable step
     function draw() {
-        var points = letterPathBuilder.createPointsFromPath(path);
+        // var points = letterPathBuilder.createPointsFromPath(path);
+        var points = letterPathBuilder.createPoints(letter, chosenFont);
         //retourne les index pour la création des triangles
         var triangles = letterPathBuilder.createTrianglesFromPoints(points);
 

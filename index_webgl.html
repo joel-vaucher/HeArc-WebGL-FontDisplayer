@@ -3,13 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <title>WebGL Font Displayer</title>
+    <!-- User interface CSS -->
+    <link href="node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Scripts -->
+    <!-- Dependencies -->
     <script src="node_modules/opentype.js/dist/opentype.js"></script>
     <script src="node_modules/earcut/dist/earcut.dev.js"></script>
     <script src="./js/commonFunctions.js"></script>
-    <script src='./js/gl-matrix-min.js'></script>
-    <script src='./js/webglTools.js'></script>
-    <script src='./js/letter-triangularizer.js'></script>
-    <script src='./js/letter.js'></script>
+    <script src="./js/gl-matrix-min.js"></script>
+    <script src="./js/webglTools.js"></script>
+    <script src="./js/letter-triangularizer.js"></script>
+    <script src="./js/letter.js"></script>
+    <!-- GLSL code -->
+    <!-- Vertex shader -->
     <script id="shader-vs" type="x-shader/x-vertex">
         attribute vec3 aVertexPosition;
         attribute vec4 aColor;
@@ -21,72 +27,46 @@
             gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
         }
     </script>
+    <!-- Fragment shader -->
     <script id="shader-fs" type="x-shader/x-fragment">
-        #ifdef GL_ES
-            precision highp float;
-        #endif
-        varying vec4 vColor;
-
-        void main(void) {
-            gl_FragColor = vColor;
-        }
+    #ifdef GL_ES
+        precision highp float;
+    #endif
+    varying vec4 vColor;
+    void main(void) {
+        gl_FragColor = vColor;
+    }
     </script>
-    <script type="text/javascript">
-        var chosenFont;
-        var canvas = document.getElementById('canvas');
-        var mvMatrix = mat4.create();
-        var pMatrix = mat4.create();
-        var letter = 'D';
-        var letters = [];
-
-        opentype.load('fonts/GothamNarrow-Ultra.otf', function(err, font) {
-            if (err) {
-                alert('Font could not be loaded: ' + err);
-            }
-            else {
-                chosenFont = font;
-                initWebGL();
-            }
-        });
-
-        function initShaderParameters(prg){
-            prg.vertexPositionAttribute = glContext.getAttribLocation(prg, "aVertexPosition");
-            glContext.enableVertexAttribArray(prg.vertexPositionAttribute);
-            prg.colorAttribute = glContext.getAttribLocation(prg, "aColor");
-            glContext.enableVertexAttribArray(prg.colorAttribute);
-            prg.pMatrixUniform = glContext.getUniformLocation(prg, 'uPMatrix');
-            prg.mvMatrixUniform = glContext.getUniformLocation(prg, 'uMVMatrix');
-        }
-        function initScene(){
-            letters = [];
-            letters.push(new Letter(letter, 0.4, 0.5, 1 ,chosenFont));
-            letters.push(new Letter('C', -0.25, 0.5, 1 ,chosenFont));
-            letters.push(new Letter('O', -1, 0.5, 1 ,chosenFont));
-        }
-        function drawScene(){
-            glContext.clearColor(0.9, 0.9, 1.0, 1.0);
-            glContext.enable(glContext.DEPTH_TEST);
-            glContext.clear(glContext.COLOR_BUFFER_BIT | glContext.DEPTH_BUFFER_BIT);
-            glContext.viewport(0, 0, c_width, c_height);
-            mat4.ortho(pMatrix, -1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
-            mat4.identity(mvMatrix);
-            glContext.uniformMatrix4fv(prg.pMatrixUniform, false, pMatrix);
-            glContext.uniformMatrix4fv(prg.mvMatrixUniform, false, mvMatrix);
-            for (var i = 0; i < letters.length; i++) {
-                letters[i].draw();
-            }
-        }
-        function initWebGL(){
-            glContext = getGLContext('canvas');
-            initProgram();
-            initScene();
-            renderLoop();
-        }
-    </script>
+    <!-- App entry point -->
+    <script src="./js/app.js"></script>
+    <!-- User Interface JS -->
+    <script src="node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
 </head>
 <body>
-  <div class="main container">
-    <canvas id="canvas" width="600" height="700"/>
-  </div>
+    <div class="main container">
+        <h1>WebGL Font Displayer</h1>
+        <div class="row">
+            <div class="">
+                <!-- <canvas id="canvas" width="600" height="700"/> -->
+                <canvas id="canvas" width="960" height="500"/>
+            </div>
+        </div>
+        <div class="row">
+            <h2>Parameters</h2>
+            <form class="">
+                <div class="form-group row">
+                    <label for="text" class="col-xs-2 col-form-label">Text</label>
+                    <div class="col-xs-3">
+                        <input class="form-control" type="text" value="" id="text" placeholder="Enter a text...">
+                    </div>
+                    <label for="font_size" class="col-xs-1 col-form-label">Font size</label>
+                    <div class="col-xs-3">
+                        <input class="form-control" type="range" value="1" min="0.5" max="12" step="0.5" id="font_size">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
 </body>
 </html>

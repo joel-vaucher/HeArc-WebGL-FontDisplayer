@@ -10,10 +10,9 @@
   </div>
   <script src="node_modules/opentype.js/dist/opentype.js"></script>
   <script src="node_modules/earcut/dist/earcut.dev.js"></script>
-  <script src="js/letter-path-builder.js"></script>
+  <script src="js/letter-triangularizer.js"></script>
   <script type="text/javascript">
 
-    var letterPathBuilder;
     var canvas = document.getElementById('canvas');
     var ctx = canvas.getContext('2d');
     var path;
@@ -26,8 +25,6 @@
         }
         else {
             chosenFont = font;
-            letterPathBuilder = new LetterPathBuilder(font);
-            // path = letterPathBuilder.createPath('T');
             draw();
         }
     });
@@ -46,9 +43,9 @@
     //Elle est limité dans la lecture de la liste des command par la variable step
     function draw() {
         // var points = letterPathBuilder.createPointsFromPath(path);
-        var points = letterPathBuilder.createPoints(letter, chosenFont);
+        var points = LetterTriangularizer.createPoints(letter, chosenFont);
         //retourne les index pour la création des triangles
-        var triangles = letterPathBuilder.createTrianglesFromPoints(points);
+        var triangles = LetterTriangularizer.createTrianglesFromPoints(points);
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -65,7 +62,13 @@
         }
         ctx.stroke();
     }
+
+    function updateLetter(input) {
+        letter = input.value;
+        draw();
+    }
   </script>
   <input type="number" id="step" value="1" onchange="drawStepByStep();return false;"/>
+  <input type="text" id="letter-input" name="letter" value="T" maxlength="1" onchange="updateLetter(this); return false;">
 </body>
 </html>

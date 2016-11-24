@@ -1,11 +1,20 @@
-class LetterPathBuilder {
-    constructor(font) {
-        this._font = font;
-    }
-    createPoints(letter, font) {
+/** @module LetterTriangularizer */
+var LetterTriangularizer = (function() {
+    /**
+     * Crée une liste de points à partir d'une lettre et d'un font.
+     * @param  {String} letter  - Lettre  dont on veut récupérer le nuage de points.
+     * @param  {font} font  - Font décodé par opentype utilisé pour la lettre.
+     * @return {Array}
+     */
+    var createPoints = function (letter, font) {
         return this.createPointsFromPath(font.getPath(letter, 0, 150, 72));
     }
-    createPointsFromPath(path) {
+    /**
+     * Crée un liste de points à partir d'un path.
+     * @param  {path} path - Chemin contenant l'ensemble de commandes à exécuter pour dessiner la lettre dans le canevas.
+     * @return {Array}
+     */
+    var createPointsFromPath = function (path) {
         var points = [];
         var accuracy = 10;
         var step;
@@ -60,9 +69,17 @@ class LetterPathBuilder {
         }
         return points;
     }
-    createTrianglesFromPoints(points) {
+    /**
+     * Retourne la liste des indexes pour dessiner les triangles à partir des points du path.
+     * @param  {Array} points  - Contient la liste des points composant la lettre.
+     * @return {Array}
+     */
+    var createTrianglesFromPoints = function(points) {
         return earcut(points);
     }
-    set font (font) { this._font = font; }
-    get font () { return this._font; }
-}
+    return {
+        createPoints: createPoints,
+        createPointsFromPath: createPointsFromPath,
+        createTrianglesFromPoints, createTrianglesFromPoints
+    };
+})();

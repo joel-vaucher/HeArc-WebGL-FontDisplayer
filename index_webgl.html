@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>WebGL Font Displayer</title>
+  <script src="node_modules/opentype.js/dist/opentype.js"></script>
+  <script src="node_modules/earcut/dist/earcut.dev.js"></script>
+  <script src="./js/commonFunctions.js"></script>
+  <script src='./js/gl-matrix-min.js'></script>
+  <script src='./js/webglTools.js'></script>
+  <script id="shader-vs" type="x-shader/x-vertex">
+    attribute vec3 aVertexPosition;
+    attribute vec4 aColor;
+    uniform mat4 uMVMatrix;
+    uniform mat4 uPMatrix;
+    varying vec4 vColor;
+    void main(void) {
+      vColor = aColor;
+      gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+    }
+  </script>
+	<script id="shader-fs" type="x-shader/x-fragment">
+		#ifdef GL_ES
+			precision highp float;
+		#endif
+    varying vec4 vColor;
+    void main(void) {
+      gl_FragColor = vColor;
+    }
+	</script>
+  <script type="text/javascript">
+    var gFont;
+    var canvas = document.getElementById('canvas');
+    var path;
+		var vertexBuffer = null;
+		var indexBuffer = null;
+		var colorBuffer = null;
+		var indices = [];
+		var vertices = [];
+		var colors = [];
+		var mvMatrix = mat4.create();
+		var pMatrix = mat4.create();
+
+    var i = 0;
+    opentype.load('fonts/GothamNarrow-Ultra.otf', function(err, font) {
+      if (err) {
+        alert('Font could not be loaded: ' + err);
+      } else {
+        // Construct a Path object containing the letter shapes of the given text.
+        // The other parameters are x, y and fontSize.
+        // Note that y is the position of the baseline.
+        path = font.getPath('L', 0, 0.5, 1);
+        gFont = font;
+        initWebGL();
+      }
+    });
+
+		function initShaderParameters(prg){
+			prg.vertexPositionAttribute = glContext.getAttribLocation(prg, "aVertexPosition");
+			glContext.enableVertexAttribArray(prg.vertexPositionAttribute);
+			prg.colorAttribute 			= glContext.getAttribLocation(prg, "aColor");
+			glContext.enableVertexAttribArray(prg.colorAttribute);
+			prg.pMatrixUniform          = glContext.getUniformLocation(prg, 'uPMatrix');
+			prg.mvMatrixUniform         = glContext.getUniformLocation(prg, 'uMVMatrix');
+		}
+		function initBuffers(){
+			indices = [];
+			vertices = [];
+			colors = [];
+
+      acc = 10;
+      //permet de connaitre de le point d'origine dans la création des courbes de bézier
+      lastcommand = {x: 0, y:0};
+      console.log("Draw")
+      path.commands.forEach(function (command){
+        //ajoute les extrémités d'une ligne d'une ligne
+        if(command.type == 'L' || command.type == 'M') {
+          console.log("line")
+          vertices.push(command.x);
+          vertices.push(command.y);
+          vertices.push(0);
+        //ajoute ACC+1 points répartit le long d'une courbe de bézier
+        } else if (command.type == 'C') {
+          console.log("Courbe Cubique");
+          stepC = 1/acc;
+          for(t = stepC; t < 1; t += stepC){
+            //OPTIMISATION NECESSAIRE
+            //formule de bézier
+            px = (1-t)*(1-t)*(1-t)*lastcommand.x + 3*(1-t)*(1-t)*t*command.x1 + 3*(1-t)*t*t*command.x2 + t*t*t * command.x;
+            py = (1-t)*(1-t)*(1-t)*lastcommand.y + 3*(1-t)*(1-t)*t*command.y1 + 3*(1-t)*t*t*command.y2 + t*t*t * command.y;
+            vertices.push(px);
+            vertices.push(py);
+            vertices.push(0);
+            console.log(px);
+            console.log(py);
+          }
+          vertices.push(command.x);
+          vertices.push(command.y);
+          vertices.push(0);
+        //ajoute ACC+1 point répartit le long d'une courbe de bézier
+        } else if(command.type == 'Q'){
+          console.log("Courbe Quadratique");
+          stepQ = 1/acc;
+          for(t = stepQ; t < 1; t += stepQ){
+            //OPTIMISATION NECESSAIRE
+            //formule de bézier
+            px = (1-t)*(1-t)*lastcommand.x + 2*(1-t)*t*command.x1 + t*t * command.x;
+            py = (1-t)*(1-t)*lastcommand.y + 2*(1-t)*t*command.y1 + t*t * command.y;
+            vertices.push(px);
+            vertices.push(py);
+            vertices.push(0);
+            console.log(px);
+            console.log(py);
+          }
+          vertices.push(command.x);
+          vertices.push(command.y);
+          vertices.push(0);
+        //ajout le point d'origine pour fermer la forme
+        //Optimisation ?
+        } else if(command.type == 'Z'){
+          vertices.push(vertices[0]);
+          vertices.push(vertices[1]);
+          vertices.push(0);
+        }
+        lastcommand = command;
+      });
+
+      for(i = 0; i < vertices.length; i++){
+        colors.push(Math.random() * 255);
+        colors.push(Math.random() * 255);
+        colors.push(Math.random() * 255);
+        colors.push(0.0);
+      }
+
+      indices = earcut(vertices, null, 3);
+      console.log("v:"+vertices);
+      //console.log("c:"+colors);
+      console.log("i:"+indices);
+
+
+			vertexBuffer = getVertexBufferWithVertices(vertices);
+			indexBuffer = getIndexBufferWithIndices(indices);
+			colorBuffer = getVertexBufferWithVertices(colors);
+		}
+		function drawScene(){
+			glContext.clearColor(0.9, 0.9, 1.0, 1.0);
+			glContext.enable(glContext.DEPTH_TEST);
+			glContext.clear(glContext.COLOR_BUFFER_BIT | glContext.DEPTH_BUFFER_BIT);
+			glContext.viewport(0, 0, c_width, c_height);
+			mat4.ortho(pMatrix, -1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
+			mat4.identity(mvMatrix);
+			glContext.uniformMatrix4fv(prg.pMatrixUniform, false, pMatrix);
+			glContext.uniformMatrix4fv(prg.mvMatrixUniform, false, mvMatrix);
+			glContext.bindBuffer(glContext.ARRAY_BUFFER, vertexBuffer);
+			glContext.vertexAttribPointer(prg.vertexPositionAttribute, 3, glContext.FLOAT, false, 0, 0);
+			glContext.bindBuffer(glContext.ARRAY_BUFFER, colorBuffer);
+			glContext.vertexAttribPointer(prg.colorAttribute, 4, glContext.FLOAT, false, 0, 0);
+			glContext.bindBuffer(glContext.ELEMENT_ARRAY_BUFFER, indexBuffer);
+			glContext.drawElements(glContext.TRIANGLES, indices.length, glContext.UNSIGNED_SHORT,0);
+		}
+		function initWebGL(){
+			glContext = getGLContext('canvas');
+			initProgram();
+			initBuffers();
+			renderLoop();
+		}
+  </script>
+</head>
+<body>
+  <div class="main container">
+    <canvas id="canvas" width="600" height="700"/>
+  </div>
+</body>
+</html>

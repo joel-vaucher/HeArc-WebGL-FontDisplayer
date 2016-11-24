@@ -9,6 +9,7 @@
     <script src='./js/gl-matrix-min.js'></script>
     <script src='./js/webglTools.js'></script>
     <script src='./js/letter-triangularizer.js'></script>
+    <script src='./js/letter.js'></script>
     <script id="shader-vs" type="x-shader/x-vertex">
         attribute vec3 aVertexPosition;
         attribute vec4 aColor;
@@ -33,15 +34,10 @@
     <script type="text/javascript">
         var chosenFont;
         var canvas = document.getElementById('canvas');
-        var vertexBuffer = null;
-        var indexBuffer = null;
-        var colorBuffer = null;
-        var indices = [];
-        var vertices = [];
-        var colors = [];
         var mvMatrix = mat4.create();
         var pMatrix = mat4.create();
-        var letter = 'T';
+        var letter = 'D';
+        var letters = [];
 
         opentype.load('fonts/GothamNarrow-Ultra.otf', function(err, font) {
             if (err) {
@@ -61,29 +57,11 @@
             prg.pMatrixUniform = glContext.getUniformLocation(prg, 'uPMatrix');
             prg.mvMatrixUniform = glContext.getUniformLocation(prg, 'uMVMatrix');
         }
-        function initBuffers(){
-            indices = [];
-            vertices = [];
-            colors = [];
-
-            console.log("Draw")
-            vertices = LetterTriangularizer.createVertices(letter, 0, 0.5, 1 ,chosenFont)
-
-            for(let i = 0; i < vertices.length; i++){
-                colors.push(Math.random());
-                colors.push(Math.random());
-                colors.push(Math.random());
-                colors.push(1.0);
-            }
-
-            indices = LetterTriangularizer.createIndicesFromPoints(vertices);
-            // console.log("v:"+vertices);
-            // console.log("c:"+colors);
-            // console.log("i:"+indices);
-
-            vertexBuffer = getVertexBufferWithVertices(vertices);
-            indexBuffer = getIndexBufferWithIndices(indices);
-            colorBuffer = getVertexBufferWithVertices(colors);
+        function initScene(){
+            letters = [];
+            letters.push(new Letter(letter, 0.4, 0.5, 1 ,chosenFont));
+            letters.push(new Letter('C', -0.25, 0.5, 1 ,chosenFont));
+            letters.push(new Letter('O', -1, 0.5, 1 ,chosenFont));
         }
         function drawScene(){
             glContext.clearColor(0.9, 0.9, 1.0, 1.0);
@@ -94,17 +72,14 @@
             mat4.identity(mvMatrix);
             glContext.uniformMatrix4fv(prg.pMatrixUniform, false, pMatrix);
             glContext.uniformMatrix4fv(prg.mvMatrixUniform, false, mvMatrix);
-            glContext.bindBuffer(glContext.ARRAY_BUFFER, vertexBuffer);
-            glContext.vertexAttribPointer(prg.vertexPositionAttribute, 3, glContext.FLOAT, false, 0, 0);
-            glContext.bindBuffer(glContext.ARRAY_BUFFER, colorBuffer);
-            glContext.vertexAttribPointer(prg.colorAttribute, 4, glContext.FLOAT, false, 0, 0);
-            glContext.bindBuffer(glContext.ELEMENT_ARRAY_BUFFER, indexBuffer);
-            glContext.drawElements(glContext.TRIANGLES, indices.length, glContext.UNSIGNED_SHORT,0);
+            for (var i = 0; i < letters.length; i++) {
+                letters[i].draw();
+            }
         }
         function initWebGL(){
             glContext = getGLContext('canvas');
             initProgram();
-            initBuffers();
+            initScene();
             renderLoop();
         }
     </script>

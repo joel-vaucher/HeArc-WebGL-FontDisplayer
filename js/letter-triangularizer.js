@@ -9,7 +9,7 @@ var LetterTriangularizer = (function() {
      * @param  {font} font  - Font décodé par opentype utilisé pour la lettre.
      * @return {Array}
      */
-    var createVertices = function (letter, x, y, fontSize,font) {
+    var createVertices = function (letter, x, y, fontSize, font) {
         return this.createVerticesFromPath(font.getPath(letter, x, y, fontSize));
     }
     /**

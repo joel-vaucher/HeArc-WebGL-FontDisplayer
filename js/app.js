@@ -4,6 +4,7 @@ var mvMatrix = mat4.create();
 var pMatrix = mat4.create();
 var letter = 'D';
 var letters = [];
+var fontSize = 0.7;
 
 opentype.load('fonts/GothamNarrow-Ultra.otf', function(err, font) {
     if (err) {
@@ -25,9 +26,9 @@ function initShaderParameters(prg){
 }
 function initScene(){
     letters = [];
-    letters.push(new Letter(letter, 0.4, 0.5, 0.7 ,chosenFont));
-    letters.push(new Letter('C', -0.25, 0.5, 0.7 ,chosenFont));
-    letters.push(new Letter('O', -1, 0.5, 0.7 ,chosenFont));
+    letters.push(new Letter(letter, 0.4, 0.5, fontSize ,chosenFont));
+    letters.push(new Letter('C', -0.25, 0.5, fontSize ,chosenFont));
+    letters.push(new Letter('O', -1, 0.5, fontSize ,chosenFont));
 }
 function drawScene(){
     glContext.clearColor(0.9, 0.9, 1.0, 1.0);
@@ -48,3 +49,20 @@ function initWebGL(){
     initScene();
     renderLoop();
 }
+function updateScene() {
+    // Pas forcément la bonne fonction à appeler. A optimiser.
+    initScene();
+}
+/**
+ * User Interface interaction
+ */
+$( document ).ready(function() {
+    $('#parameters-forms').submit(false);
+    $('#font_size').on('change', function() {
+        fontSize = $(this).val();
+        updateScene();
+    });
+    $('#text').on('change input', function() {
+        console.log($(this).val().split(''));
+    });
+});

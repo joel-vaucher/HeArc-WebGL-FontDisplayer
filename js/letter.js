@@ -22,6 +22,7 @@ class Letter {
         this.vertices = [];
         this.colors = [];
         this.mvMatrix = mat4.create();
+        this.xMax = -10000; //this.xMax = Number.MIN_VALUE; doesn't work here
         this.init();
     }
     /**
@@ -31,7 +32,14 @@ class Letter {
      * the letter.
      */
     init() {
-        this.vertices = LetterTriangularizer.createVertices(this.letter, this.x, this.y, this.fontSize ,this.font);;
+        this.vertices = LetterTriangularizer.createVertices(this.letter, this.x, this.y, this.fontSize ,this.font);
+        // We try to find the maximum x to dertermine where to write the first letter
+        for (let i = 0; i < this.vertices.length; i += 3) {
+            if (this.vertices[i] > this.xMax) {
+                this.xMax = this.vertices[i];
+            }
+        }
+
         this.indices = LetterTriangularizer.createIndicesFromPoints(this.vertices);;
         this.colors = [];
 
@@ -41,10 +49,6 @@ class Letter {
             this.colors.push(Math.random());
             this.colors.push(1.0);
         }
-
-        // console.log("v:"+vertices);
-        // console.log("c:"+colors);
-        // console.log("i:"+indices);
 
         this.vertexBuffer = getVertexBufferWithVertices(this.vertices);
         this.indexBuffer = getIndexBufferWithIndices(this.indices);

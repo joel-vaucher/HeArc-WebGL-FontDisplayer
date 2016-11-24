@@ -2,9 +2,10 @@ var chosenFont;
 var canvas = document.getElementById('canvas');
 var mvMatrix = mat4.create();
 var pMatrix = mat4.create();
+var text = '';
 var letter = 'D';
 var letters = [];
-var fontSize = 0.7;
+var fontSize = 0.3;
 
 opentype.load('fonts/GothamNarrow-Ultra.otf', function(err, font) {
     if (err) {
@@ -26,9 +27,25 @@ function initShaderParameters(prg){
 }
 function initScene(){
     letters = [];
-    letters.push(new Letter(letter, 0.4, 0.5, fontSize ,chosenFont));
-    letters.push(new Letter('C', -0.25, 0.5, fontSize ,chosenFont));
-    letters.push(new Letter('O', -1, 0.5, fontSize ,chosenFont));
+    var characters = text.split('');
+    var y = 0;
+    var letterSpacing = 0.02;
+    if (characters.length <= 0) {
+        characters = 'Hello_World!'.split('');
+    }
+    if (characters.length > 1) {
+        letters.push(new Letter(characters[0], -1, y, fontSize, chosenFont));
+        lastLetter = letters[letters.length -1];
+        for (let i = 1; i < characters.length; i++) {
+            letters.push(new Letter(characters[i], lastLetter.xMax + letterSpacing, y, fontSize ,chosenFont));
+            lastLetter = letters[letters.length -1];
+        }
+    }
+    else {
+        letters.push(new Letter(characters[0], 0, y, fontSize ,chosenFont));
+    }
+
+
 }
 function drawScene(){
     glContext.clearColor(0.9, 0.9, 1.0, 1.0);
@@ -57,12 +74,15 @@ function updateScene() {
  * User Interface interaction
  */
 $( document ).ready(function() {
+    $('#font_size').val(fontSize);
     $('#parameters-forms').submit(false);
     $('#font_size').on('change', function() {
         fontSize = $(this).val();
         updateScene();
     });
     $('#text').on('change input', function() {
-        console.log($(this).val().split(''));
+        text = $(this).val();
+        // console.log(text.split(''));
+        updateScene();
     });
 });

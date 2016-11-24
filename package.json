@@ -3,7 +3,9 @@
   "version": "0.0.1",
   "description": "Application permettant de charger un font et de l'afficher en 3D dans un contexter WebGL.",
   "dependencies": {
+    "bootstrap": "^3.3.7",
     "earcut": "^2.1.1",
+    "jquery": "^3.1.1",
     "opentype.js": "^0.6.*"
   },
   "main": "index.html",

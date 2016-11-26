@@ -6,6 +6,7 @@ var text = '';
 var letter = 'D';
 var letters = [];
 var fontSize = 0.3;
+var letterSpacing = 0.02;
 
 opentype.load('fonts/GothamNarrow-Ultra.otf', function(err, font) {
     if (err) {
@@ -29,7 +30,6 @@ function initScene(){
     letters = [];
     var characters = text.split('');
     var y = 0;
-    var letterSpacing = 0.02;
     if (characters.length <= 0) {
         characters = 'Hello_World!'.split('');
     }
@@ -44,8 +44,6 @@ function initScene(){
     else {
         letters.push(new Letter(characters[0], 0, y, fontSize ,chosenFont));
     }
-
-
 }
 function drawScene(){
     glContext.clearColor(0.9, 0.9, 1.0, 1.0);
@@ -75,14 +73,23 @@ function updateScene() {
  */
 $( document ).ready(function() {
     $('#font_size').val(fontSize);
+    // $('#letter_spacing').val(letterSpacing);
     $('#parameters-forms').submit(false);
     $('#font_size').on('change', function() {
         fontSize = $(this).val();
         updateScene();
     });
+    // $('#letter_spacing').on('change', function() {
+    //     letterSpacing = $(this).val();
+    //     console.log($(this).val());
+    //     updateScene();
+    // });
     $('#text').on('change input', function() {
         text = $(this).val();
         // console.log(text.split(''));
         updateScene();
+    });
+    $('#font_file').on('change', function() {
+        console.log("New file chosen!");
     });
 });

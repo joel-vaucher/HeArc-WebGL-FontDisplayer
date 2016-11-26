@@ -7,8 +7,11 @@ var letter = 'D';
 var letters = [];
 var fontSize = 0.3;
 var letterSpacing = 0.02;
+var fontsURLList = {};
+fontsURLList['Gotham'] = 'fonts/GothamNarrow-Ultra.otf';
+var fontsList;
 
-opentype.load('fonts/GothamNarrow-Ultra.otf', function(err, font) {
+opentype.load(fontsURLList['Gotham'], function(err, font) {
     if (err) {
         alert('Font could not be loaded: ' + err);
     }
@@ -68,10 +71,23 @@ function updateScene() {
     // Pas forcément la bonne fonction à appeler. A optimiser.
     initScene();
 }
+function updateFontsList() {
+    fontsList.empty();
+    for (let fontName in fontsURLList) {
+        if (fontsURLList.hasOwnProperty(fontName)) {
+            fontsList.append(
+                $('<a/>')
+                .addClass('list-group-item list-group-item-action')
+                .text(fontName)
+            );
+        }
+    }
+}
 /**
  * User Interface interaction
  */
 $( document ).ready(function() {
+    fontsList = $('#fonts_list');
     $('#font_size').val(fontSize);
     // $('#letter_spacing').val(letterSpacing);
     $('#parameters-forms').submit(false);
@@ -91,5 +107,7 @@ $( document ).ready(function() {
     });
     $('#font_file').on('change', function() {
         console.log("New file chosen!");
+        updateFontsList();
     });
+    updateFontsList();
 });

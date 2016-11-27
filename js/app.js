@@ -11,13 +11,15 @@ var fontsURLList = {};
 fontsURLList['Gotham'] = 'fonts/GothamNarrow-Ultra.otf';
 var fontsList;
 
+var fileURL = 'fonts/GothamNarrow-Ultra.otf';
+
 opentype.load(fontsURLList['Gotham'], function(err, font) {
     if (err) {
         alert('Font could not be loaded: ' + err);
     }
     else {
         chosenFont = font;
-        initWebGL();
+        // initWebGL();
     }
 });
 
@@ -77,11 +79,28 @@ function updateFontsList() {
         if (fontsURLList.hasOwnProperty(fontName)) {
             fontsList.append(
                 $('<a/>')
-                .addClass('list-group-item list-group-item-action')
+                .addClass('list-group-item list-group-item-action font-name')
+                .data('url', fontsURLList[fontName])
                 .text(fontName)
             );
         }
     }
+    $('.font-name').on('click', function () {
+        // console.log($(this).data('url'));
+        loadFont($(this).data('url'));
+        updateScene();
+    });
+}
+
+function loadFont(fontFileURL) {
+    opentype.load(fontFileURL, function(err, font) {
+        if (err) {
+            alert('Font could not be loaded: ' + err);
+        }
+        else {
+            chosenFont = font;
+        }
+    });
 }
 /**
  * User Interface interaction
@@ -102,12 +121,19 @@ $( document ).ready(function() {
     // });
     $('#text').on('change input', function() {
         text = $(this).val();
-        // console.log(text.split(''));
         updateScene();
     });
     $('#font_file').on('change', function() {
-        console.log("New file chosen!");
-        updateFontsList();
+        var file = $(this).prop('files')[0];
+        if (!fontsURLList.hasOwnProperty(file.name)) {
+            var fileURL = window.URL.createObjectURL(file);
+            fontsURLList[file.name] = fileURL;
+            console.log(fileURL);
+            loadFont(fileURL);
+            updateFontsList();
+            updateScene();
+        }
     });
     updateFontsList();
+    initWebGL();
 });

@@ -10,6 +10,7 @@ var letterSpacing = 0.02;
 var fontsURLList = {};
 fontsURLList['Gotham'] = 'fonts/GothamNarrow-Ultra.otf';
 var fontsList;
+var render = true;
 
 var fileURL = 'fonts/GothamNarrow-Ultra.otf';
 
@@ -39,15 +40,15 @@ function initScene(){
         characters = 'Hello_World!'.split('');
     }
     if (characters.length > 1) {
-        letters.push(new Letter(characters[0], -1, y, fontSize, chosenFont));
+        letters.push(new Letter(characters[0], -1, y, fontSize, chosenFont, render));
         lastLetter = letters[letters.length -1];
         for (let i = 1; i < characters.length; i++) {
-            letters.push(new Letter(characters[i], lastLetter.xMax + letterSpacing, y, fontSize ,chosenFont));
+            letters.push(new Letter(characters[i], lastLetter.xMax + letterSpacing, y, fontSize ,chosenFont, render));
             lastLetter = letters[letters.length -1];
         }
     }
     else {
-        letters.push(new Letter(characters[0], 0, y, fontSize ,chosenFont));
+        letters.push(new Letter(characters[0], 0, y, fontSize ,chosenFont, render));
     }
 }
 function drawScene(){
@@ -106,6 +107,7 @@ function loadFont(fontFileURL) {
  * User Interface interaction
  */
 $( document ).ready(function() {
+    render = true;
     fontsList = $('#fonts_list');
     $('#font_size').val(fontSize);
     // $('#letter_spacing').val(letterSpacing);
@@ -121,6 +123,14 @@ $( document ).ready(function() {
     // });
     $('#text').on('change input', function() {
         text = $(this).val();
+        updateScene();
+    });
+    $('#fullrender').on('click', function () {
+        render = true;
+        updateScene();
+    });
+    $('#wireframe').on('click', function () {
+        render = false;
         updateScene();
     });
     $('#font_file').on('change', function() {

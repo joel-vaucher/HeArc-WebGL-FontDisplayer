@@ -9,12 +9,13 @@ class Letter {
      * @param {Number} fontSize - Letter's font size.
      * @param {Font} font - Letter's font used to draw.
      */
-    constructor(letter, x, y, fontSize, font) {
+    constructor(letter, x, y, fontSize, font, render) {
         this.letter = letter;
         this.x = x;
         this.y = y;
         this.fontSize = fontSize;
         this.font = font;
+        this.render = render;
         this.vertexBuffer = null;
         this.indexBuffer = null;
         this.colorBuffer = null;
@@ -43,10 +44,15 @@ class Letter {
         this.indices = LetterTriangularizer.createIndicesFromPoints(this.vertices);;
         this.colors = [];
 
+        var colorFunction = Math.random;
+        if (this.render) {
+            colorFunction = () => { return 0.0; }
+        }
+
         for(let i = 0; i < this.vertices.length; i++){
-            this.colors.push(Math.random());
-            this.colors.push(Math.random());
-            this.colors.push(Math.random());
+            this.colors.push(colorFunction());
+            this.colors.push(colorFunction());
+            this.colors.push(colorFunction());
             this.colors.push(1.0);
         }
 

@@ -40,10 +40,10 @@ function initScene(){
         characters = 'Hello_World!'.split('');
     }
     if (characters.length > 1) {
-        letters.push(new Letter(characters[0], -1, y, fontSize, chosenFont, render));
+        letters.push(new Letter3D(characters[0], -1, y, 0, 0.1, fontSize, chosenFont, render));
         lastLetter = letters[letters.length -1];
         for (let i = 1; i < characters.length; i++) {
-            letters.push(new Letter(characters[i], lastLetter.xMax + letterSpacing, y, fontSize ,chosenFont, render));
+            letters.push(new Letter3D(characters[i], lastLetter.xMax + letterSpacing, y, 0, 0.1, fontSize ,chosenFont, render));
             lastLetter = letters[letters.length -1];
         }
     }
@@ -57,11 +57,11 @@ function drawScene(){
     glContext.clear(glContext.COLOR_BUFFER_BIT | glContext.DEPTH_BUFFER_BIT);
     glContext.viewport(0, 0, c_width, c_height);
     mat4.ortho(pMatrix, -1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
-    mat4.identity(mvMatrix);
+    rotateModelViewMatrixUsingQuaternion(true);
     glContext.uniformMatrix4fv(prg.pMatrixUniform, false, pMatrix);
     glContext.uniformMatrix4fv(prg.mvMatrixUniform, false, mvMatrix);
     for (var i = 0; i < letters.length; i++) {
-        letters[i].draw();
+        letters[i].draw(mvMatrix);
     }
 }
 function initWebGL(){

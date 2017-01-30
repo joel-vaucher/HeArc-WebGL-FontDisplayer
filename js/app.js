@@ -40,10 +40,10 @@ function initScene(){
         characters = 'Hello_World!'.split('');
     }
     if (characters.length > 1) {
-        letters.push(new Letter3D(characters[0], -1, y, 0, 0.1, fontSize, chosenFont, render));
+        letters.push(LetterConstructor.createLetter3D(characters[0], -1, y, 0, 0.1, fontSize, chosenFont, render));
         lastLetter = letters[letters.length -1];
         for (let i = 1; i < characters.length; i++) {
-            letters.push(new Letter3D(characters[i], lastLetter.xMax + letterSpacing, y, 0, 0.1, fontSize ,chosenFont, render));
+            letters.push(LetterConstructor.createLetter3D(characters[i], lastLetter.xMax + letterSpacing, y, 0, 0.1, fontSize ,chosenFont, render));
             lastLetter = letters[letters.length -1];
         }
     }
